@@ -1,0 +1,77 @@
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to convert a matrix A into a unit lower triangular matrix
+def unit_lower_triangular_matrix(A, n):
+    L_comp = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if j < i:
+                L_comp[i][j] = int(A[i][j])
+            elif j == i:
+                L_comp[i][j] = 1
+            else:
+                L_comp[i][j] = 0
+    return L_comp
+
+# Function to map L to a single indexed 1D-array by compressing the row entries below the diagonal
+def compressed_row_lower_triangular(L_comp, n):
+    S = int((n * (n+1) / 2) - n)
+    L_mapped = [[0] for i in range(S)]
+    index = 0
+    for i in range(n):
+        for j in range(i):
+            L_mapped[index] = L_comp[i][j]
+            index += 1
+    return L_mapped
+
+# Function to perform matrix-vector multiplication
+def compressed_matrix_vector_product(L_mapped, v, n):
+    w_comp = [[0] for i in range(n)]
+    index = 0
+    for i in range(n):
+        w_comp[i][0] += v[i][0]
+        for j in range(i):
+            w_comp[i][0] += L_mapped[index] * v[j][0]
+            index += 1
+    return w_comp
+
+
+if __name__ == '__main__':
+    print("-> Sample Test for Routine 2: ")
+# Set dimension n for generating (nxn) matrix and (nx1) vector.
+# Input lower and upper ranges to generate random number entries.
+    n = int(input('Set Dimension n: '))
+
+# Generate random integer (nxn) matrix A.
+    A = np.random.randint(1, 10, size=(n, n))
+
+# Generate random integer (nx1) vector v.
+    v= [[random.randint(1, 10)] for i in range(n)]
+
+# Run routines for computed L and w
+    L_comp = unit_lower_triangular_matrix(A, n)
+    L_mapped = compressed_row_lower_triangular(L_comp, n)
+    w_comp = compressed_matrix_vector_product(L_mapped, v, n)
+
+# Use Python library numpy for true L and w
+    L_true = np.tril(A)
+    np.fill_diagonal(L_true, 1)
+    v_np = np.array(v)
+    w_true = np.dot(L_true, v_np)
+
+# Display the results
+    print(f"Randomly Generated {n}x{n} Matrix A:\n{A}\n")
+    print(f"Computed Lower Triangular {n}x{n} Matrix L:")
+    for row in L_comp:
+        print(row)
+    print(f"Row Compressed Lower Triangular {n}x{n} Matrix L:")
+    print(L_mapped)
+    print(f"\nRandomly Generated {n}x1 Vector v:")
+    for row in v:
+        print(row)
+    print(f"\nComputed Matrix-Vector Product w = Lv:")
+    for row in w_comp:
+        print(row)
+    print(f"\nTrue Matrix-Vector Product w = Lv:\n{w_true}\n")

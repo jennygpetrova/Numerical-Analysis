@@ -1,0 +1,83 @@
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to convert a matrix A into a banded unit lower triangular matrix
+def banded_unit_lower_triangular(A, n):
+    L_comp = [[0 for j in range(n)] for i in range(n)]
+    L_banded = [[0 for j in range(n-1)] for i in range(2)]
+    for i in range(n):
+        for j in range(n):
+            if (i - j == 1):
+                L_comp[i][j] = int(A[i][j])
+                if i > 0:
+                    L_banded[1][i-1] = L_comp[i][j]
+            elif (i - j == 2):
+                L_comp[i][j] = int(A[i][j])
+                if i > 1:
+                    L_banded[0][i-1] = L_comp[i][j]
+            elif (j == i):
+                L_comp[i][j] = 1
+            else:
+                L_comp[i][j] = 0
+    return L_comp, L_banded
+
+# Function to perform matrix-vector multiplication
+import numpy as np
+
+
+def banded_matrix_vector_product(L_banded, v, n):
+    # Initialize the result vector with zeros
+    w_comp = [0] * n
+
+    for i in range(n):
+        # The value from the main diagonal
+        w_comp[i] += L_banded[0][i] * v[i][0]
+
+        # The value from the lower diagonal (sub-diagonal)
+        if i > 0:
+            w_comp[i] += L_banded[0][i - 1] * v[i - 1][0]
+
+        # The value from the second lower diagonal (if applicable)
+        if i > 1:
+            w_comp[i] += L_banded[1][i - 2] * v[i - 2][0]
+
+    return w_comp
+
+
+if __name__ == '__main__':
+    print("-> Routine 4: ")
+    n = int(input('Set Dimension n: '))
+
+# Generate random integer (nxn) matrix A.
+    A = np.random.randint(1, 100, size=(n, n))
+
+# Generate random integer (nx1) vector v.
+    v = [[random.randint(1, 100)] for i in range(n)]
+
+# Run routines for computed L and w
+    L_banded = banded_unit_lower_triangular(A, n)
+    w_comp = banded_matrix_vector_product(L_banded, v, n)
+
+# Use Python library numpy for true L and w
+    L_true = np.tril(A)
+    np.fill_diagonal(L_true, 1)
+    v_np = np.array(v)
+    w_true = np.dot(L_true, v_np)
+
+# Display the Results
+    print(f"Randomly Generated {n}x{n} Matrix A:\n{A}\n")
+    print(f"2D-Array of Banded Unit Lower Triangular {n}x{n} Matrix L:")
+    for row in L_banded:
+        print(row)
+    print(f"\nRandomly Generated {n}x1 Vector v:")
+    for row in v:
+        print(row)
+    print(f"\nComputed Matrix-Vector Product w = Lv:")
+    for row in w_comp:
+        print(row)
+    print(f"\nTrue Matrix-Vector Product w = Lv:\n{w_true}\n")
+
+
+
+

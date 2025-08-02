@@ -1,0 +1,65 @@
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to convert a matrix A into a lower triangular matrix
+def lower_triangular_matrix(A, n):
+    L_comp = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if (j <= i):
+                L_comp[i][j] = int(A[i][j])
+            else:
+                L_comp[i][j] = 0
+    return L_comp
+
+# Function to perform matrix-vector multiplication
+def matrix_vector_product(L_comp, v, n):
+    w_comp = [[0] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            w_comp[i][0] += L_comp[i][j] * v[j][0]
+    return w_comp
+
+# Function to compute error between computed and true result w
+def compute_errors(w_comp, w_true):
+    abs_error = int(np.linalg.norm(np.array(w_true) - np.array(w_comp)))
+    rel_error = int(abs_error / np.linalg.norm(np.array(w_true)))
+    return abs_error, rel_error
+
+if __name__ == '__main__':
+    print("-> Sample Test for Routine 1: ")
+# Set dimension n for generating (nxn) matrix and (nx1) vector.
+# Input lower and upper ranges to generate random number entries.
+    n = int(input('Set Dimension n: '))
+
+# Generate random integer (nxn) matrix A.
+    A = np.random.randint(1, 10, size=(n, n))
+
+# Generate random integer (nx1) vector v.
+    v= [[random.randint(1, 10)] for i in range(n)]
+
+
+# Run routines for computed L and w
+    L_comp = lower_triangular_matrix(A, n)
+    w_comp = matrix_vector_product(L_comp, v, n)
+
+# Use Python library numpy for true L and w
+    L_true = np.tril(A)
+    v_np = np.array(v)
+    w_true = np.dot(L_true, v_np)
+
+# Display the results
+    print(f"Randomly Generated {n}x{n} Matrix A:\n{A}\n")
+    print(f"Computed Lower Triangular {n}x{n} Matrix L:")
+    for row in L_comp:
+        print(row)
+    print(f"\nRandomly Generated {n}x1 Vector v:")
+    for row in v:
+        print(row)
+    print(f"\nComputed Matrix-Vector Product w = Lv:")
+    for row in w_comp:
+        print(row)
+    print(f"\nTrue Lower Triangular {n}x{n} Matrix L:\n{L_true}\n")
+    print(f"\nTrue Matrix-Vector Product w = Lv:\n{w_true}\n")
+

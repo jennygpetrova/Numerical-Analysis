@@ -1,0 +1,124 @@
+""" Programming Assignment 1 """
+' This is a test driver for the testing the matrix-vector product subroutines: '
+' w <-- Lv '
+''' 
+The actions of this routine are controlled by the parameters set at the beginning. 
+Tests are run for the specified subroutine for a range of values of the dimension n
+(specified by user input). Python's library and commands will be used for comparison
+between "true" answer and the computed answer from the subroutines.
+'''
+
+print("Routine 1: L*v product algorithm \n"
+      "Routine 2: L*v product algorithm, with L compressed by rows \n"
+      "Routine 3: L*v product algorithm, with L banded \n")
+
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Import the routines
+from routine1_1 import lower_triangular_matrix, matrix_vector_product
+from routine1_2 import unit_lower_triangular_matrix, compressed_row_lower_triangular, compressed_matrix_vector_product
+#from routine1_3 import banded_unit_lower_triangular, banded_matrix_vector_product
+
+#Function to compute absolute and relative errors
+def compute_vector_errors(w_comp, w_true):
+    abs_error = int(np.linalg.norm(np.array(w_true) - np.array(w_comp)))
+    rel_error = int(abs_error / np.linalg.norm(np.array(w_true)))
+    return abs_error, rel_error
+
+# Input the routine to be called
+routine_num = int(input("Enter the Routine Number: "))
+
+# Set range of matrix dimensions and number of tests per dimension
+n_min = int(input('Min Dimension n to Test: '))
+n_max = int(input('Max Dimension n to Test: '))
+n_delta = int(input('Step Size: '))
+n_tests = int(input('Number of Tests per Dimension : '))
+n_experiments = len(range(n_min, n_max + 1, n_delta)) * n_tests
+
+# Set empty arrays for the summary statistics
+abs_errors = []
+rel_errors = []
+mean_abs_errors = []
+var_abs_errors = []
+min_abs_errors = []
+max_abs_errors = []
+value_of_n = []
+
+# Run the experiments according to user-input values and specified routine number
+print("Number of Experiments: ", n_experiments)
+for n in range(n_min, n_max + 1, n_delta):
+    A = np.random.randint(1, 10, size=(n, n))
+    value_of_n.append(n)
+    print("n =", n )
+    for j in range(n_tests):
+        v = [[random.randint(1, 10)] for i in range(n)]
+        if routine_num == 1:
+            L_comp = lower_triangular_matrix(A, n)
+            w_comp = matrix_vector_product(L_comp, v, n)
+            L_true = np.tril(A)
+            v_np = np.array(v)
+            w_true = np.dot(L_true, v_np)
+        elif routine_num == 2:
+            L_comp = unit_lower_triangular_matrix(A, n)
+            L_mapped = compressed_row_lower_triangular(L_comp, n)
+            w_comp = compressed_matrix_vector_product(L_mapped, v, n)
+            L_true = np.tril(A)
+            np.fill_diagonal(L_true, 1)
+            v_np = np.array(v)
+            w_true = np.dot(L_true, v_np)
+        #elif routine_num == 3:
+        abs_error, rel_error = compute_vector_errors(w_comp, w_true)
+        abs_errors.append(abs_error)
+        rel_errors.append(rel_error)
+    mean_abs_errors.append(np.mean(abs_errors))
+    var_abs_errors.append(np.var(abs_errors))
+    min_abs_errors.append(np.min(abs_errors))
+    max_abs_errors.append(np.max(abs_errors))
+    print("mean absolute error for this n = ", np.mean(abs_errors))
+    print("variance of absolute error for this n = ", np.var(abs_errors))
+    print("min absolute error for this n = ", np.min(abs_errors))
+    print("max absolute error for this n = ", np.max(abs_errors))
+
+
+# Plot a Histogram of the Absolute Errors
+plt.hist(abs_errors, bins=20, color='b', edgecolor='black', label='Abs Error')
+plt.xlabel('Abs Error Values')
+plt.ylabel('Frequency')
+plt.title('Histogram of Abs Error for Computed w vs. Tested w: ')
+plt.legend()
+plt.show()
+
+# Plot the Mean of the Absolute Error for each n tested
+plt.plot(value_of_n, mean_abs_errors, marker='o', color='b', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Mean of Abs Error per Dimension: ')
+plt.legend()
+plt.show()
+
+# Plot the Variance of the Absolute Error for each n tested
+plt.plot(value_of_n, mean_abs_errors, marker='o', color='b', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Variance of Abs Error per Dimension: ')
+plt.legend()
+plt.show()
+
+# Plot the Min of the Absolute Error for each n tested
+plt.plot(value_of_n, mean_abs_errors, marker='o', color='b', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Min of Abs Error per Dim n: ')
+plt.legend()
+plt.show()
+
+# Plot the Max of the Absolute Error for each n tested
+plt.plot(value_of_n, mean_abs_errors, marker='o', color='b', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Max of Abs Error per Dim n: ')
+plt.legend()
+plt.show()
+

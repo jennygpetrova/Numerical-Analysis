@@ -1,0 +1,204 @@
+' The test driver for routine 4 is separate from the driver for the routines 1-3 '
+' This is a test driver for the testing the matrix-matrix product: '
+' M <-- LU '
+''' 
+The actions of this routine are controlled by the parameters set at the beginning. 
+Tests are run for the specified subroutine for a range of values of the dimension n
+(specified by user input). Python's library and commands will be used for comparison
+between "true" answer and the computed answer from the subroutines.
+'''
+
+import random
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Function to convert a matrix A into a unit lower triangular matrix
+def unit_lower_triangular_matrix(A, n):
+    L_comp = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if j < i:
+                L_comp[i][j] = int(A[i][j])
+            elif j == i:
+                L_comp[i][j] = 1
+            else:
+                L_comp[i][j] = 0
+    return L_comp
+
+# Function to convert a matrix A into an upper triangular matrix
+def upper_triangular_matrix(A, n):
+    U_comp = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if (j >= i):
+                U_comp[i][j] = int(A[i][j])
+            else:
+                U_comp[i][j] = 0
+    return U_comp
+
+# Function to combine a upper triangular matrix and a unit lower triangular matrix into a matrix B
+def lower_upper_combined_matrix(L_comp, U_comp, n):
+    B = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            if j < i:
+                B[i][j] = L_comp[i][j]
+            else:
+                B[i][j] = U_comp[i][j]
+    return B
+
+# Function to perform matrix-matrix multiplication on
+def lower_upper_matrix_product(B, n):
+    M = [[0 for j in range(n)] for i in range(n)]
+    for i in range(n):
+        for j in range(n):
+            sum = 0
+            for k in range(min(i, j) + 1):
+                if i == k:
+                    sum += 1 * B[k][j]
+                else:
+                    sum += B[i][k] * B[k][j]
+            M[i][j] = sum
+    return M
+
+# Compute the difference between the computed and true matrices
+def compute_errors(M_comp, M_true):
+    M = M_comp - M_true
+    M_fnorm = np.linalg.norm(M, ord='fro')  # Frobenius norm
+    M_1norm = np.linalg.norm(M, ord=1)  # 1-norm (maximum absolute column sum)
+    M_2norm = np.linalg.norm(M, ord=2)  # 2-norm (largest singular value)
+    M_infnorm = np.linalg.norm(M, ord=np.inf)  # Infinity norm (maximum absolute row sum)
+
+    return M_fnorm, M_1norm, M_2norm, M_infnorm
+
+
+if __name__ == '__main__':
+    print("-> Sample Test for Routine 4: ")
+    n = int(input('Set Dimension n: '))
+
+# Generate random integer (nxn) matrix A.
+    A = np.random.randint(1, 10, size=(n, n))
+
+# Generate random integer (nx1) vector v.
+    v = [[random.randint(1, 10)] for i in range(n)]
+
+# Run routines for computed unit L, U and M
+    L_comp = unit_lower_triangular_matrix(A, n)
+    U_comp = upper_triangular_matrix(A, n)
+    B = lower_upper_combined_matrix(L_comp, U_comp, n)
+    M_comp = lower_upper_matrix_product(A, n)
+
+# Use Python library numpy for true M
+    L_true = np.tril(A)
+    np.fill_diagonal(L_true, 1)
+    U_true = np.triu(A)
+    v_np = np.array(v)
+    M_true = np.dot(L_true, U_true)
+
+# Display the Results
+    print(f"Randomly Generated {n}x{n} Matrix A:")
+    for row in A:
+        print(row)
+    print(f"\nComputed Unit Lower Triangular {n}x{n} Matrix L:")
+    for row in L_comp:
+        print(row)
+    print(f"\nComputed Upper Triangular {n}x{n} Matrix U:")
+    for row in U_comp:
+        print(row)
+    print(f"\nRandomly Generated {n}x1 Vector v:")
+    for row in v:
+        print(row)
+    print(f"\nComputed Matrix-Matrix Product M = LU:")
+    for row in M_true:
+        print(row)
+    print(f"\nTrue Matrix-Matrix Product M = LU:\n{M_true}\n")
+
+    # Compute errors
+    errors = compute_errors(M_comp, M_true)
+    print("Frobenius norm of error:", errors[0])
+    print("1-norm of error:", errors[1])
+    print("2-norm of error:", errors[2])
+    print("Infinity norm of error:", errors[3])
+
+
+# Set range of matrix dimensions and number of tests per dimension
+n_min = int(input('Min Dimension n to Test: '))
+n_max = int(input('Max Dimension n to Test: '))
+n_delta = int(input('Step Size: '))
+n_tests = int(input('Number of Tests per Dimension : '))
+n_experiments = len(range(n_min, n_max + 1, n_delta)) * n_tests
+
+# Set empty arrays for the summary statistics
+M_fnorm_values = []
+M_1norm_values = []
+M_2norm_values = []
+M_infnorm_values = []
+mean_2norm = []
+var_2norm = []
+min_2norm = []
+max_2norm = []
+value_of_n = []
+
+print("Number of Experiments: ", n_experiments)
+for n in range(n_min, n_max + 1, n_delta):
+    A = np.random.randint(1, 10, size=(n, n))
+    value_of_n.append(n)
+    print("n =", n )
+    for j in range(n_tests):
+        v = [[random.randint(1, 10)] for i in range(n)]
+        L_comp = unit_lower_triangular_matrix(A, n)
+        U_comp = upper_triangular_matrix(A, n)
+        B = lower_upper_combined_matrix(L_comp, U_comp, n)
+        M_comp = lower_upper_matrix_product(A, n)
+        L_true = np.tril(A)
+        np.fill_diagonal(L_true, 1)
+        U_true = np.triu(A)
+        v_np = np.array(v)
+        M_true = np.dot(L_true, U_true)
+    errors = compute_errors(M_comp, M_true)
+    M_fnorm_values.append(errors[0])
+    M_1norm_values.append(errors[1])
+    M_2norm_values.append(errors[2])
+    M_infnorm_values.append(errors[3])
+    mean_2norm.append(np.mean(errors[2]))
+    var_2norm.append(np.var(errors[2]))
+    min_2norm.append(np.min(errors[2]))
+    max_2norm.append(np.max(errors[2]))
+    print("Frobenius norm of error:", errors[0])
+    print("1-norm of error:", errors[1])
+    print("2-norm of error:", errors[2])
+    print("Infinity norm of error:", errors[3])
+
+
+# Plot the Mean of the 2norm for each n tested
+plt.plot(value_of_n, mean_2norm, marker='o', color='g', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Mean of 2norm per Dimension: ')
+plt.legend()
+plt.show()
+
+# Plot the Variance of the 2norm for each n tested
+plt.plot(value_of_n, var_2norm, marker='o', color='g', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Variance of 2norm per Dimension: ')
+plt.legend()
+plt.show()
+
+# Plot the Min of the 2norm for each n tested
+plt.plot(value_of_n, min_2norm, marker='o', color='g', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Min of 2norm per Dim n: ')
+plt.legend()
+plt.show()
+
+# Plot the Max of the 2norm for each n tested
+plt.plot(value_of_n, max_2norm, marker='o', color='g', label='Mean of Abs Error')
+plt.xlabel('Dimension n')
+plt.ylabel('Abs Error')
+plt.title('Max of 2norm per Dim n: ')
+plt.legend()
+plt.show()
+
