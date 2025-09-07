@@ -1,0 +1,3 @@
+This repository contains the programming assignments and reports completed in Florida State University's course in "Foundations of Computational Mathematics" taken in the Department of Mathematics.
+The course, and assignments, generally follow the content and rigor of Alfio Quarteroni's "Numerical Analysis" textbook.
+This two-semester course spanned Fall 2024 and Spring 2025, and required for the Qualifying Examinations for the Financial Mathematics doctorate program at Florida State University.
